@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum FormationTrack {
+  AGE_0_5
+  AGE_6
+  AGE_7_13
+  AGE_14_17
+  ADULT_CATECHUMENATE
+  ADULT_CONFIRMATION
+}
+
+enum CatechesisHistory {
+  NONE
+  ONE_YEAR
+  TWO_YEARS
+  THREE_YEARS
+  FOUR_YEARS
+  OTHER
+}
+
+enum PaymentMethod {
+  CASH
+  CHEQUE
+  DEBIT
+  CREDIT_CARD
+  INTERAC
+}
+
+model Registration {
+  id                       Int               @id @default(autoincrement())
+  registrationYear         Int
+  formationTrack           FormationTrack
+  firstName                String
+  lastName                 String
+  birthDate                DateTime
+  age                      Int
+  motherFirstName          String
+  motherLastName           String
+  fatherFirstName          String
+  fatherLastName           String
+  address                  String
+  city                     String
+  postalCode               String
+  fatherPhone              String
+  motherPhone              String
+  parentEmail              String
+  birthCertificateProvided Boolean
+  catechesisHistory        CatechesisHistory
+  catechesisHistoryOther   String?
+  signature                String?
+  signatureDate            DateTime?
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+  sacramentStatus          SacramentStatus?
+  godparentInfo            GodparentInfo?
+  baptismInfo              BaptismInfo?
+  paymentInfo              PaymentInfo?
+  adminScheduleInfo        AdminScheduleInfo?
+
+  @@index([lastName, firstName])
+  @@index([registrationYear])
+}
+
+model SacramentStatus {
+  id               Int          @id @default(autoincrement())
+  registrationId   Int          @unique
+  baptism          Boolean      @default(false)
+  firstPardon      Boolean      @default(false)
+  firstCommunion   Boolean      @default(false)
+  professionOfFaith Boolean     @default(false)
+  confirmation     Boolean      @default(false)
+  registration     Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+}
+
+model GodparentInfo {
+  id                           Int          @id @default(autoincrement())
+  registrationId               Int          @unique
+  godfatherFirstName           String?
+  godfatherLastName            String?
+  godfatherCertificateProvided Boolean      @default(false)
+  godmotherFirstName           String?
+  godmotherLastName            String?
+  godmotherCertificateProvided Boolean      @default(false)
+  registration                 Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+}
+
+model BaptismInfo {
+  id                         Int          @id @default(autoincrement())
+  registrationId             Int          @unique
+  baptismDate                DateTime?
+  baptismCertificateProvided Boolean      @default(false)
+  baptismParishName          String?
+  baptismParishAddress       String?
+  baptismParishEmail         String?
+  registration               Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+}
+
+model PaymentInfo {
+  id              Int          @id @default(autoincrement())
+  registrationId  Int          @unique
+  registrationFee Float
+  trainingFee     Float        @default(0)
+  paymentMethod   PaymentMethod
+  chequeNumber    String?
+  paidAt          DateTime?
+  registration    Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+}
+
+model AdminScheduleInfo {
+  id               Int          @id @default(autoincrement())
+  registrationId   Int          @unique
+  baptismDate      DateTime?
+  baptismTime      String?
+  celebrant        String?
+  trainingDate     DateTime?
+  trainingTime     String?
+  presentationDate DateTime?
+  presentationTime String?
+  registration     Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+}
